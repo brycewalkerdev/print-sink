@@ -15,7 +15,7 @@
   <Identity
     Name="PrintSink"
     Publisher="CN=PrintSink"
-    Version="1.0.8.0" />
+    Version="1.0.9.0" />
 
   <mp:PhoneIdentity PhoneProductId="3DD16A35-0AD0-4766-AC85-6D87ABB8D761" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
