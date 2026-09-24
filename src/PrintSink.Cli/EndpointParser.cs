@@ -26,6 +26,7 @@ internal static class EndpointParser
             "CLOUD" => EndpointKind.Cloud,
             "PWG" or "PWG-RASTER" or "PWGRASTER" => EndpointKind.PwgRaster,
             "PCLM" or "PCL-M" => EndpointKind.Pclm,
+            "CLIPBOARD" or "IMAGE-CLIPBOARD" or "CLIP" => EndpointKind.Clipboard,
             _ => default,
         };
 

@@ -86,6 +86,7 @@ internal static class SinkCommand
                 [EndpointKind.PostScript] = fileSink,
                 [EndpointKind.PwgRaster] = fileSink,
                 [EndpointKind.Pclm] = fileSink,
+                [EndpointKind.Clipboard] = new CapturingSink(),
                 [EndpointKind.Cloud] = cloudSink,
             });
             FixtureVirtualPrinterJob job = new(contentType, endpoint, inputPath, outputPath);

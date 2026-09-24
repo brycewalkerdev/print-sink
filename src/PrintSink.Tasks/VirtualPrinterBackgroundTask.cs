@@ -135,6 +135,12 @@ public sealed class VirtualPrinterBackgroundTask : IBackgroundTask
         VirtualEndpoint endpoint,
         LocalDiagnosticEventStore diagnosticEventStore)
     {
+        // Clipboard printing should finish directly from the source application's print dialog.
+        if (endpoint.Kind == EndpointKind.Clipboard)
+        {
+            return new JobUiCompletionResult(true, false);
+        }
+
         JobUiOptions options = await settingsStore.GetJobUiOptionsAsync().ConfigureAwait(false);
         if (!options.LaunchJobUi)
         {
@@ -202,6 +208,7 @@ public sealed class VirtualPrinterBackgroundTask : IBackgroundTask
             [EndpointKind.Cloud] = new CloudSink(PersistCloudSinkAsync),
             [EndpointKind.PwgRaster] = new TargetStreamSink(),
             [EndpointKind.Pclm] = new TargetStreamSink(),
+            [EndpointKind.Clipboard] = new ClipboardSink(),
         });
 
         return new VirtualPrinterJobProcessor(

@@ -21,4 +21,7 @@
   <data name="PclmPrintDisplayName" xml:space="preserve">
     <value>PrintSink - PCLm</value>
   </data>
+  <data name="ClipboardPrintDisplayName" xml:space="preserve">
+    <value>PrintSink - Clipboard (Image)</value>
+  </data>
 </root>

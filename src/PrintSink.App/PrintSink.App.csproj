@@ -35,12 +35,13 @@
         <WindowsAppSdkUndockedRegFreeWinRTInitialize>false</WindowsAppSdkUndockedRegFreeWinRTInitialize>
         <TargetPlatformMinVersion>10.0.26100.0</TargetPlatformMinVersion>
         <SupportedOSPlatformVersion>10.0.26100.0</SupportedOSPlatformVersion>
+        <NoWarn>$(NoWarn);CS8305</NoWarn>
         <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
         <RuntimeIdentifier Condition="'$(Configuration)' == 'Release' And '$(RuntimeIdentifier)' == '' And '$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
         <RuntimeIdentifier Condition="'$(Configuration)' == 'Release' And '$(RuntimeIdentifier)' == '' And '$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
         <WinUISDKReferences>false</WinUISDKReferences>
         <EnableMsixTooling>true</EnableMsixTooling>
-        <CsWinRTWindowsMetadata>10.0.26100.0</CsWinRTWindowsMetadata>
+        <CsWinRTWindowsMetadata>10.0.28000.0</CsWinRTWindowsMetadata>
         <CsWinRTPrivateProjection>true</CsWinRTPrivateProjection>
         <CsWinRTIncludesPrivate>
             Windows.Devices.Printers.VirtualPrinterInstallationParameters;

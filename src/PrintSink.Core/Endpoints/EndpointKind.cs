@@ -34,4 +34,9 @@ public enum EndpointKind
     /// PCLm file endpoint.
     /// </summary>
     Pclm,
+
+    /// <summary>
+    /// Stacks all rendered pages into one image on the Windows clipboard.
+    /// </summary>
+    Clipboard,
 }

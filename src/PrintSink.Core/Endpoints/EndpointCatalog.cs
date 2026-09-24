@@ -64,6 +64,15 @@ public static class EndpointCatalog
             [],
             true,
             ".pclm"),
+        new(
+            EndpointKind.Clipboard,
+            "PrintSink - Clipboard (Image)",
+            new Uri("printsink:print-to-clipboard"),
+            PdlFormat.Oxps,
+            PdlFormat.PwgRaster,
+            [],
+            false,
+            null),
     ];
 
     /// <summary>

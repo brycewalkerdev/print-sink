@@ -336,6 +336,7 @@ internal static partial class VirtualPrinterInstaller
             EndpointKind.Cloud => "PrinterCloud",
             EndpointKind.PwgRaster => "PrinterPwgRaster",
             EndpointKind.Pclm => "PrinterPclm",
+            EndpointKind.Clipboard => "PrinterPwgRaster",
             _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unsupported endpoint kind."),
         };
     }

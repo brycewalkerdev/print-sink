@@ -25,6 +25,7 @@ internal sealed class EndpointCatalogTests
             EndpointKind.Cloud,
             EndpointKind.PwgRaster,
             EndpointKind.Pclm,
+            EndpointKind.Clipboard,
         ];
 
         CollectionAssert.AreEqual(expected, EndpointCatalog.All.Select(endpoint => endpoint.Kind).ToArray());
@@ -55,13 +56,24 @@ internal sealed class EndpointCatalogTests
         Assert.AreEqual(PdlFormat.Pdf, endpoint.TargetFormat);
     }
 
+    /// <summary>Verifies that the clipboard endpoint is an application sink.</summary>
+    [TestMethod]
+    public void ClipboardEndpointIsAnImageApplicationSink()
+    {
+        VirtualEndpoint endpoint = EndpointCatalog.GetByKind(EndpointKind.Clipboard);
+
+        Assert.IsFalse(endpoint.RequiresTargetFile);
+        Assert.IsNull(endpoint.DefaultExtension);
+        Assert.AreEqual(PdlFormat.PwgRaster, endpoint.TargetFormat);
+    }
+
     /// <summary>
     /// Verifies that file endpoints declare file output metadata.
     /// </summary>
     [TestMethod]
     public void FileEndpointsRequireTargetFileAndExtension()
     {
-        foreach (VirtualEndpoint endpoint in EndpointCatalog.All.Where(endpoint => endpoint.Kind != EndpointKind.Cloud))
+        foreach (VirtualEndpoint endpoint in EndpointCatalog.All.Where(endpoint => endpoint.RequiresTargetFile))
         {
             Assert.IsTrue(endpoint.RequiresTargetFile);
             Assert.IsFalse(string.IsNullOrWhiteSpace(endpoint.DefaultExtension));

@@ -15,7 +15,7 @@
   <Identity
     Name="PrintSink"
     Publisher="CN=PrintSink"
-    Version="1.0.0.0" />
+    Version="1.0.8.0" />
 
   <mp:PhoneIdentity PhoneProductId="3DD16A35-0AD0-4766-AC85-6D87ABB8D761" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
@@ -49,6 +49,7 @@
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
       <Extensions>
+        <desktop:Extension Category="windows.fullTrustProcess" Executable="PrintSink.App.exe" />
         <uap3:Extension Category="windows.appExecutionAlias">
           <uap3:AppExecutionAlias>
             <desktop:ExecutionAlias Alias="printsink-app.exe" />
@@ -127,6 +128,18 @@
             OutputFileTypes="pclm"
             PdcFile="Config\PrinterPclm.pdc.xml"
             PdrFile="Config\PrinterPclm.pdr.xml" />
+        </printsupport2:Extension>
+        <printsupport2:Extension Category="windows.printSupportVirtualPrinterWorkflow" EntryPoint="PrintSink.Tasks.VirtualPrinterBackgroundTask">
+          <printsupport2:PrintSupportVirtualPrinter
+            DisplayName="ms-resource:ClipboardPrintDisplayName"
+            PrinterUri="printsink:print-to-clipboard"
+            PreferredInputFormat="application/oxps"
+            PdcFile="Config\PrinterPwgRaster.pdc.xml"
+            PdrFile="Config\PrinterPwgRaster.pdr.xml">
+            <printsupport2:SupportedFormats>
+              <printsupport2:SupportedFormat Type="image/pwg-raster" MaxVersion="1.0" />
+            </printsupport2:SupportedFormats>
+          </printsupport2:PrintSupportVirtualPrinter>
         </printsupport2:Extension>
       </Extensions>
     </Application>

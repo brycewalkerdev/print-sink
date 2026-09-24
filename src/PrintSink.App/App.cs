@@ -4,6 +4,11 @@ using PrintSink.App;
 
 try
 {
+    if (await ClipboardJobCommand.RunIfRequestedAsync(args).ConfigureAwait(false) is int clipboardExitCode)
+    {
+        return clipboardExitCode;
+    }
+
     VirtualPrinterCommandLine.WriteStartupTrace($"Process args: {string.Join('|', args)}");
     AppActivationArguments activationArguments = AppInstance.GetCurrent().GetActivatedEventArgs();
     VirtualPrinterCommandLine.WriteStartupTrace(VirtualPrinterCommandLine.Describe(activationArguments));

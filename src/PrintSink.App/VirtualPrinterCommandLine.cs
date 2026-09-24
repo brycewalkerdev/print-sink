@@ -406,7 +406,7 @@ internal static class VirtualPrinterCommandLine
             "  --set-default-copies        Set default ticket copies for --endpoint.",
             "  --assert-virtual-attribute-read  Assert virtual-printer IPP attribute behavior.",
             "  --winrt-source-print        Open a WinRT print-source harness for E2E validation.",
-            "  --endpoint <kind>           Endpoint kind: Pdf, Xps, PostScript, Cloud, PwgRaster, Pclm.",
+            "  --endpoint <kind>           Endpoint kind: Pdf, Xps, PostScript, Cloud, PwgRaster, Pclm, Clipboard.",
             "  --printer <name>            Printer name used with --print-pdf-passthrough instead of --endpoint.",
             "  --text <value>              Text used with --set-text-watermark.",
             "  --image <path>              Image file used with --set-image-watermark.",
