@@ -56,9 +56,24 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+          if (-not (Test-Path -LiteralPath $vswhere)) {
+            throw 'Could not find vswhere.exe.'
+          }
+
+          $installationPath = & $vswhere -latest -prerelease -products '*' -requires Microsoft.Component.MSBuild -property installationPath
+          if (-not $installationPath) {
+            throw 'Could not find a Visual Studio installation with MSBuild.'
+          }
+
+          $msbuild = Join-Path $installationPath 'MSBuild\Current\Bin\MSBuild.exe'
+          if (-not (Test-Path -LiteralPath $msbuild)) {
+            throw "Could not find MSBuild.exe at $msbuild."
+          }
+
           $packageDirectory = Join-Path $env:GITHUB_WORKSPACE 'artifacts\release\'
           New-Item -ItemType Directory -Force -Path $packageDirectory | Out-Null
-          & msbuild 'src\PrintSink.App\PrintSink.App.csproj' `
+          & $msbuild 'src\PrintSink.App\PrintSink.App.csproj' `
             /restore `
             /t:Build `
             /p:Configuration=Release `
