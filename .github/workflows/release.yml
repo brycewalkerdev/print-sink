@@ -149,7 +149,7 @@ jobs:
 
           The package uses a self-signed sideloading certificate, valid for two years from the release date. The certificate is included; Windows must trust it to install this package.
 
-          **SHA-256:** `$checksum`
+          **SHA-256:** $checksum
 
           **AI disclosure:** The additions in this release were created agentically with Astra-6.
           "@ | Set-Content -LiteralPath $notesPath -Encoding utf8
