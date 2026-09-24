@@ -1,0 +1,131 @@
+name: Publish Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: Existing version tag to package and release (for example, v1.0.8)
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish signed x64 MSIX
+    runs-on: windows-2025-vs2026
+    steps:
+      - name: Check out release tag
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.tag_name }}
+
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Create short-lived package signing certificate
+        id: certificate
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ inputs.tag_name }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          [xml] $manifest = Get-Content -LiteralPath 'src\PrintSink.App\Package.appxmanifest'
+          $version = ([version] $manifest.Package.Identity.Version).ToString(3)
+          if ('v' + $version -ne $env:RELEASE_TAG) {
+            throw "Release tag $env:RELEASE_TAG does not match manifest version $version."
+          }
+
+          $certificate = New-SelfSignedCertificate `
+            -Type Custom `
+            -Subject 'CN=PrintSink' `
+            -FriendlyName 'PrintSink GitHub Release signing' `
+            -KeyUsage DigitalSignature `
+            -KeyAlgorithm RSA `
+            -KeyLength 2048 `
+            -HashAlgorithm SHA256 `
+            -CertStoreLocation Cert:\CurrentUser\My `
+            -TextExtension @('2.5.29.37={text}1.3.6.1.5.5.7.3.3', '2.5.29.19={text}CA=false') `
+            -NotAfter (Get-Date).AddYears(2)
+          "thumbprint=$($certificate.Thumbprint)" >> $env:GITHUB_OUTPUT
+
+      - name: Build signed MSIX
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $packageDirectory = Join-Path $env:GITHUB_WORKSPACE 'artifacts\release\'
+          New-Item -ItemType Directory -Force -Path $packageDirectory | Out-Null
+          & msbuild 'src\PrintSink.App\PrintSink.App.csproj' `
+            /restore `
+            /t:Build `
+            /p:Configuration=Release `
+            /p:Platform=x64 `
+            /p:GenerateAppxPackageOnBuild=true `
+            /p:AppxPackageSigningEnabled=true `
+            /p:PackageCertificateThumbprint='${{ steps.certificate.outputs.thumbprint }}' `
+            /p:AppxBundle=Never `
+            /p:UapAppxPackageBuildMode=SideloadOnly `
+            /p:AppxAutoIncrementPackageRevision=false `
+            "/p:AppxPackageDir=$packageDirectory" `
+            /nologo `
+            /v:minimal
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+
+          $package = Get-ChildItem -LiteralPath $packageDirectory -Recurse -Filter '*.msix' |
+            Sort-Object LastWriteTimeUtc -Descending |
+            Select-Object -First 1
+          if ($null -eq $package) {
+            throw 'The signed MSIX package was not created.'
+          }
+
+          $releaseDirectory = Join-Path $env:GITHUB_WORKSPACE 'artifacts\release-assets'
+          New-Item -ItemType Directory -Force -Path $releaseDirectory | Out-Null
+          Copy-Item -LiteralPath $package.FullName -Destination (Join-Path $releaseDirectory 'PrintSink-Clipboard-x64.msix')
+          $certificate = Get-Item "Cert:\CurrentUser\My\${{ steps.certificate.outputs.thumbprint }}"
+          Export-Certificate -Cert $certificate -FilePath (Join-Path $releaseDirectory 'PrintSink.cer') | Out-Null
+
+      - name: Create GitHub release with installer and certificate
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag_name }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $tag = $env:RELEASE_TAG
+          $notesPath = Join-Path $env:RUNNER_TEMP 'release-notes.md'
+          $packagePath = Join-Path $env:GITHUB_WORKSPACE 'artifacts\release-assets\PrintSink-Clipboard-x64.msix'
+          $checksum = (Get-FileHash -LiteralPath $packagePath -Algorithm SHA256).Hash
+          @"
+          ## What's new
+
+          - Adds a Clipboard (Image) virtual printer. Print jobs stack every page vertically into one clipboard image. Clipboard jobs run without opening PrintSink's extra preview.
+          - Supports compressed RaS2 and uncompressed RaS3 raster input, with scaling for large documents.
+
+          ## Install
+
+          1. Download `PrintSink-Clipboard-x64.msix` and `PrintSink.cer` from the release assets.
+          2. In PowerShell in the download folder, run `Import-Certificate -FilePath .\PrintSink.cer -CertStoreLocation Cert:\CurrentUser\TrustedPeople`.
+          3. Open the MSIX and select **Install**. Requires Windows 11 24H2 or newer.
+
+          The package uses a self-signed sideloading certificate, valid for two years from the release date. The certificate is included; Windows must trust it to install this package.
+
+          **SHA-256:** `$checksum`
+
+          **AI disclosure:** The additions in this release were created agentically with Astra-6.
+          "@ | Set-Content -LiteralPath $notesPath -Encoding utf8
+          $assets = @(
+            $packagePath,
+            (Join-Path $env:GITHUB_WORKSPACE 'artifacts\release-assets\PrintSink.cer')
+          )
+          & gh release create $tag @assets --repo $env:GITHUB_REPOSITORY `
+            --title 'PrintSink 1.0.8 - Multi-page clipboard printer' `
+            --notes-file $notesPath `
+            --latest
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
