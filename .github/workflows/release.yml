@@ -158,10 +158,26 @@ jobs:
             $packagePath,
             (Join-Path $env:GITHUB_WORKSPACE 'artifacts\release-assets\PrintSink.cer')
           )
-          & gh release create $tag @assets --repo $env:GITHUB_REPOSITORY `
-            --title "PrintSink $($tag.TrimStart('v')) - Clipboard printer with app icon" `
-            --notes-file $notesPath `
-            --latest
+          $releaseTitle = "PrintSink $($tag.Substring(1)) - Clipboard printer with app icon"
+          $null = & gh release view $tag --repo $env:GITHUB_REPOSITORY 2>$null
+          $releaseExists = $LASTEXITCODE -eq 0
+          if ($releaseExists) {
+            & gh release upload $tag @assets --repo $env:GITHUB_REPOSITORY --clobber
+            if ($LASTEXITCODE -ne 0) {
+              exit $LASTEXITCODE
+            }
+
+            & gh release edit $tag --repo $env:GITHUB_REPOSITORY `
+              --title $releaseTitle `
+              --notes-file $notesPath `
+              --latest
+          }
+          else {
+            & gh release create $tag @assets --repo $env:GITHUB_REPOSITORY `
+              --title $releaseTitle `
+              --notes-file $notesPath `
+              --latest
+          }
           if ($LASTEXITCODE -ne 0) {
             exit $LASTEXITCODE
           }
