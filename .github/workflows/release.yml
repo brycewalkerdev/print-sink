@@ -26,6 +26,35 @@ jobs:
         with:
           global-json-file: global.json
 
+      - name: Install Windows SDK 28000
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $sdkRoot = Join-Path ${env:ProgramFiles(x86)} 'Windows Kits\10\Platforms\UAP\10.0.28000.0'
+          if (-not (Test-Path -LiteralPath (Join-Path $sdkRoot 'Platform.xml'))) {
+            $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+            $installationPath = & $vswhere -latest -prerelease -products '*' -requires Microsoft.Component.MSBuild -property installationPath
+            if (-not $installationPath) {
+              throw 'Could not find Visual Studio to install the required Windows SDK component.'
+            }
+
+            $setup = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\setup.exe'
+            & $setup modify `
+              --installPath $installationPath `
+              --add Microsoft.VisualStudio.Component.Windows11SDK.28000 `
+              --quiet `
+              --wait `
+              --norestart `
+              --nocache
+            if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne 3010) {
+              throw "Installing Windows SDK 28000 failed with exit code $LASTEXITCODE."
+            }
+          }
+
+          if (-not (Test-Path -LiteralPath (Join-Path $sdkRoot 'Platform.xml'))) {
+            throw "Windows SDK 10.0.28000.0 Platform.xml was not installed under $sdkRoot."
+          }
+
       - name: Create short-lived package signing certificate
         id: certificate
         shell: pwsh
