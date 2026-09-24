@@ -43,7 +43,6 @@ jobs:
               --installPath $installationPath `
               --add Microsoft.VisualStudio.Component.Windows11SDK.28000 `
               --quiet `
-              --wait `
               --norestart `
               --nocache
             if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne 3010) {
